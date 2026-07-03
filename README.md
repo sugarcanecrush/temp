@@ -1,1 +1,80 @@
-# temp
+$ pip install pyyaml
+$ pip install setuptools==69.5.1
+$ pip install cmake
+$ pip install "cmake>=3.25,<3.26" --force-reinstall
+$ pip install "mkl-include>=2021.0.0"
+$ pip install --no-deps "mkl-static>=2021.0.0"
+$ pip install -r requirements.txt
+$ pip install torch==2.3.0+cu121 --index-url https://download.pytorch.org/whl
+$ pip install torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 --index-url https://download.pytorch.org/whl/cu121
+
+$ git clone https://github.com/intel/torch-ccl.git torch-ccl
+$ cd torch-ccl/
+$ git checkout ccl_torch_dev_0131
+$ git submodule sync
+$ git submodule update --init --recursive
+
+$ mkdir llvm-release
+$ LLVM_ROOT="$(pwd)/llvm-release"
+$ git clone https://github.com/llvm/llvm-project.git llvm-project
+$ cd llvm-project/
+$ git checkout llvmorg-16.0.6
+$ git submodule sync
+$ git submodule update --init --recursive
+$ mkdir build
+$ cd build/
+$ ABI=$(python -c "import torch; print(int(torch._C._GLIBCXX_USE_CXX11_ABI))")
+$ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI==${ABI}" -DLLVM_TARGETS_TO_BUILD=X86 -DLLVM_ENABLE_TERMINFO=OFF -DLLVM_INCLUDE_TESTS=OFF -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_BENCHMARKS=OFF -DCMAKE_C_COMPILER=${GCC-12} -DCMAKE_CXX_COMPILER=${G++-12} -DPython3_EXECUTABLE=$(which python) -DPython3_FIND_VIRTUALENV=FIRST ../llvm
+$ cmake --build . -j
+$ cmake -DCMAKE_INSTALL_PREFIX=${LLVM_ROOT} -P cmake_install.cmake
+$ ln -s ${LLVM_ROOT}/bin/llvm-config ${LLVM_ROOT}/bin/llvm-config-13
+
+$ cd ISCA-2025-LIA/
+$ export LLVM_DIR=llvm-release/lib/cmake/llvm
+$ export DNNL_GRAPH_BUILD_COMPILER_BACKEND=1
+$ CXXFLAGS_BK=${CXXFLAGS}
+$ export CXXFLAGS="${CXXFLAGS} -D__STDC_FORMAT_MACROS"
+$ export TORCH_CUDA_ARCH_LIST="8.0 8.6 8.9 9.0"
+$ python setup.py clean
+$ python setup.py bdist_wheel
+$ cd dist/
+$ pip install intel_extension_for_pytorch-2.3.0+git612015c-cp310-cp310-linux_x86_64.whl
+
+$ cd torch-ccl/
+$ python setup.py clean
+$ python setup.py bdist_wheel
+$ cd dist/
+$ pip install oneccl_bind_pt-2.3.0+cpu-cp310-cp310-linux_x86_64.whl
+
+$ pip install cpuid accelerate datasets sentencepiece protobuf==3.20.3 neural-compressor==2.4.1
+
+$ cd transformers/
+$ pip install -e . '.[torch]'
+
+$ git clone https://github.com/EleutherAI/lm-evaluation-harness.git
+$ cd lm-evaluation-harness/
+$ git checkout cc9778fbe4fa1a709be2abed9deb6180fd40e7e2
+$ python setup.py bdist_wheel
+$ cd dist/
+$ pip install lm_eval-0.3.0-py3-none-any.whl
+
+$ git clone https://github.com/microsoft/DeepSpeed.git
+$ cd DeepSpeed/
+$ git checkout v0.14.0
+$ pip install -r requirements/requirements.txt
+$ python setup.py bdist_wheel
+$ cd dist/
+$ pip install deepspeed-0.14.0+ce78a632-py3-none-any.whl
+
+$ git clone https://github.com/oneapi-src/oneCCL.git
+$ cd oneCCL/
+$ git checkout '2021.11'
+$ mkdir build
+$ cd build/
+$ cmake -DBUILD_EXAMPLES=FALSE -DBUILD_FT=FALSE ..
+$ make -j install
+
+$ pip install numpy==1.25.2
+$ cp ISCA-2025-LIA/llm/lia/cxl/* transformers/models/opt/
+$ cp ISCA-2025-LIA/llm/lia/generation_utils.py transformers/generation/utils.py
+$ cp ISCA-2025-LIA/llm/lia/modeling_opt.py transformers/models/opt/modeling_opt.py
