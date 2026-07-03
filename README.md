@@ -1,3 +1,4 @@
+```shell
 $ pip install pyyaml
 $ pip install setuptools==69.5.1
 $ pip install cmake
@@ -78,3 +79,4 @@ $ pip install numpy==1.25.2
 $ cp ISCA-2025-LIA/llm/lia/cxl/* transformers/models/opt/
 $ cp ISCA-2025-LIA/llm/lia/generation_utils.py transformers/generation/utils.py
 $ cp ISCA-2025-LIA/llm/lia/modeling_opt.py transformers/models/opt/modeling_opt.py
+```
